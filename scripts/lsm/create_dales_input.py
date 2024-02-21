@@ -46,7 +46,7 @@ def create_lsm_input(x0, y0, itot, jtot, dx, dy, nprocx, nprocy, start_date,
 
     xsize = itot*dx
     ysize = jtot*dy
-    
+
     # LES grid (in HARMONIE coordinates...)
     x_hm = np.arange(x0+dx/2, x0+xsize, dx)
     y_hm = np.arange(y0+dy/2, y0+ysize, dy)
@@ -68,7 +68,7 @@ def create_lsm_input(x0, y0, itot, jtot, dx, dy, nprocx, nprocy, start_date,
     #
     # Download ERA5 data for initialisation soil
     download_era5_soil(start_date, era5_path)
-    
+
     # Read ERA5 soil
     e5_soil = xr.open_dataset('{0}/{1:04d}{2:02d}{3:02d}_{4:02d}_soil.nc'.format(
         era5_path, start_date.year, start_date.month, start_date.day, start_date.hour))
@@ -78,7 +78,6 @@ def create_lsm_input(x0, y0, itot, jtot, dx, dy, nprocx, nprocy, start_date,
     # Create interpolator for ERA5 -> LES grid
     interpolate_era5 = Interpolate_era5(
         lon_hm, lat_hm, e5_soil.longitude.values, e5_soil.latitude.values, itot, jtot)
-
     # Interpolate soil temperature
     interpolate_era5.interpolate(lsm_input.t_soil[0,:,:], e5_soil.stl4.values)
     interpolate_era5.interpolate(lsm_input.t_soil[1,:,:], e5_soil.stl3.values)
@@ -97,7 +96,7 @@ def create_lsm_input(x0, y0, itot, jtot, dx, dy, nprocx, nprocy, start_date,
     theta_era = np.stack(
         (e5_soil.swvl4.values, e5_soil.swvl3.values, e5_soil.swvl2.values, e5_soil.swvl1.values))
     theta_rel_era = np.zeros_like(theta_era)
-    
+
     # Fix issues arising from the ERA5/MARS interpolation from native IFS grid to regular lat/lon.
     # Near the coast, the interpolation between sea grid points (theta == 0) and land (theta >= 0)
     # results in too low values for theta. Divide out the land fraction to correct for this.
@@ -106,7 +105,7 @@ def create_lsm_input(x0, y0, itot, jtot, dx, dy, nprocx, nprocy, start_date,
 
     soil_index = np.round(e5_soil.slt.values).astype(int)
     soil_index -= 1     # Fortran -> Python indexing
-    
+
     # Read van Genuchten lookup table
     ds_vg = xr.open_dataset(os.path.join(spatial_data_path, 'van_genuchten_parameters.nc'))
 
@@ -124,35 +123,34 @@ def create_lsm_input(x0, y0, itot, jtot, dx, dy, nprocx, nprocy, start_date,
     theta_rel = np.zeros_like(lsm_input.theta_soil)
     for k in range(4):
         interpolate_era5.interpolate(theta_rel[k,:,:], theta_rel_era[k,:,:])
-
     #
     # Process spatial data.
     #
     # 1. Soil (BOFEK2012)
     #
     bf = BOFEK_info(path=spatial_data_path)
-    
+
     ds_soil = xr.open_dataset(os.path.join(spatial_data_path,'BOFEK2012_010m.nc'))
     ds_soil = ds_soil.sel(
         x=slice(x2d_rd.min()-500, x2d_rd.max()+500),
         y=slice(y2d_rd.min()-500, y2d_rd.max()+500))
-    
+
     bf_code, bf_frac = interp_dominant(
         x2d_rd, y2d_rd, ds_soil.bofek_code, valid_codes=bf.soil_id,
         max_code=507, nn=nn_dominant, nblockx=nblockx, nblocky=nblocky, dx=dx)
 
     # Depth of full level soil layers in cm:
     z_soil = np.array([194.5, 64, 17.5, 3.5])
-    
+
     # "Interpolate" (NN) BOFEK columns onto LSM grid:
     interp_soil(
         lsm_input.index_soil, z_soil, bf_code,
         bf.soil_id_lu, bf.z_mid, bf.n_layers, bf.lookup_index,
         itot, jtot, ktot_soil)
-    
+
     # Set missing values (sea, ...) to ECMWF medium fine type
     lsm_input.index_soil[lsm_input.index_soil<=0] = 2
-    
+
     init_theta_soil(
         lsm_input.theta_soil, theta_rel, lsm_input.index_soil,
         ds_vg.theta_wp.values, ds_vg.theta_fc.values, itot, jtot, ktot_soil)
@@ -167,43 +165,51 @@ def create_lsm_input(x0, y0, itot, jtot, dx, dy, nprocx, nprocy, start_date,
     ds_lu = ds_lu.sel(
         x=slice(x2d_rd.min()-500, x2d_rd.max()+500),
         y=slice(y2d_rd.min()-500, y2d_rd.max()+500))
-    
+
     low_ids_u  = np.array([9,10,11,13]+[29,30])  # with urban
     low_ids_nu = np.array([9,10,11,13])          # without urban
     high_ids   = np.array([1,2,3,4,5,6,7,8,27])
     water_ids  = np.array([14,15,16,17,18])
     urban_ids  = np.array([29,30])
-    
+
     lu_low, frac_low = interp_dominant(
         x2d_rd, y2d_rd, ds_lu.land_use, valid_codes=low_ids_u,
         max_code=low_ids_u.max(), nn=nn_dominant, nblockx=nblockx, nblocky=nblocky, dx=dx)
-    
+
     lu_high, frac_high = interp_dominant(
         x2d_rd, y2d_rd, ds_lu.land_use, valid_codes=high_ids,
         max_code=high_ids.max(), nn=nn_dominant, nblockx=nblockx, nblocky=nblocky, dx=dx)
-    
+
     lu_water, frac_water = interp_dominant(
         x2d_rd, y2d_rd, ds_lu.land_use, valid_codes=water_ids,
         max_code=water_ids.max(), nn=nn_dominant, nblockx=nblockx, nblocky=nblocky, dx=dx)
-    
+
     lu_urban, frac_urban = interp_dominant(
         x2d_rd, y2d_rd, ds_lu.land_use, valid_codes=urban_ids,
         max_code=urban_ids.max(), nn=nn_dominant, nblockx=nblockx, nblocky=nblocky, dx=dx)
-    
+
     lu_low_nu, frac_low_nu = interp_dominant(
         x2d_rd, y2d_rd, ds_lu.land_use, valid_codes=low_ids_nu,
         max_code=low_ids_nu.max(), nn=nn_dominant, nblockx=nblockx, nblocky=nblocky, dx=dx)
-    
+
     # Set vegetation fraction over Germany
     de_mask = (lu_low==-1)&(lu_high==-1)&(lu_water==-1)
     frac_low  [de_mask] = 0.7
     frac_high [de_mask] = 0.2
     frac_water[de_mask] = 0.0
 
+    slope = (50.9-51.396)/(1.7-3.414)
+    sea_mask = (lon_hm < 3.414) & ((lat_hm-51.396) >  slope * (lon_hm-3.414) )
+    # 1.7E, 50.93N    3.414E 51.396N # two points on the coast defining a line
+
+    frac_water[sea_mask] = 1.0
+    frac_low[sea_mask] = 0
+    frac_high[sea_mask] = 0
+
     # Set default values low and high vegetation, where missing
     lu_low [lu_low  == -1] = 10   # 10 = grass
     lu_high[lu_high == -1] = 3    # 3  = mixed forest
-    
+
     # Init land-surface
     lsm_input.c_lv[:,:] = frac_low
     lsm_input.c_hv[:,:] = frac_high
@@ -215,7 +221,7 @@ def create_lsm_input(x0, y0, itot, jtot, dx, dy, nprocx, nprocy, start_date,
     for vt in np.unique(lu_low):
         iv = top10_to_ifs[vt]     # Index in ECMWF lookup table
         mask = (lu_low == vt)
-        
+
         lsm_input.z0m_lv      [mask] = ifs_vegetation.z0m      [iv]
         lsm_input.z0h_lv      [mask] = ifs_vegetation.z0m      [iv]
         lsm_input.lambda_s_lv [mask] = ifs_vegetation.lambda_s [iv]
@@ -224,10 +230,10 @@ def create_lsm_input(x0, y0, itot, jtot, dx, dy, nprocx, nprocy, start_date,
         lsm_input.lai_lv      [mask] = ifs_vegetation.lai      [iv]
         lsm_input.ar_lv       [mask] = ifs_vegetation.a_r      [iv]
         lsm_input.br_lv       [mask] = ifs_vegetation.b_r      [iv]
-        
+
         # Multiply grid point coverage with vegetation type coverage
         lsm_input.c_lv[mask] *= ifs_vegetation.c_veg[iv]
-        
+
         # Bonus, for offline LSM:
         lsm_input.type_lv[mask] = iv
 
@@ -264,7 +270,7 @@ def create_lsm_input(x0, y0, itot, jtot, dx, dy, nprocx, nprocy, start_date,
     lsm_input.lambda_s_bs [:,:] = ifs_vegetation.lambda_s [iv]
     lsm_input.lambda_us_bs[:,:] = ifs_vegetation.lambda_us[iv]
     lsm_input.rs_min_bs   [:,:] = 50.
-    
+
     lsm_input.c_bs[:,:] = 1.-lsm_input.c_lv[:,:]-lsm_input.c_hv[:,:]-lsm_input.c_aq[:,:]
 
     # Bonus, for offline LSM:
@@ -276,13 +282,15 @@ def create_lsm_input(x0, y0, itot, jtot, dx, dy, nprocx, nprocy, start_date,
     lsm_input.z0m_aq[:,:] = 0.1     # ??
     lsm_input.z0h_aq[:,:] = 0.1e-2  # ??
 
+    lsm_input.x = x_hm
+    lsm_input.y = y_hm
     #
     # Write output
     #
     if write_binary_output:
         # Write binary input for DALES
         lsm_input.save_binaries(nprocx=nprocx, nprocy=nprocy, exp_id=exp_id, path=output_path)
-        
+
     if write_netcdf_output:
         # Save NetCDF for visualisation et al.
         lsm_input.save_netcdf('{}/lsm.inp_ruisdael_{}m.nc'.format(output_path, dx))

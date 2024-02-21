@@ -9,7 +9,7 @@ def download_era5_soil(date, path):
     """
     out_file = '{0}/{1:04d}{2:02d}{3:02d}_{4:02d}_soil.nc'.format(
             path, date.year, date.month, date.day, date.hour)
-
+    print('Looking for', out_file)
     if os.path.exists(out_file):
         print('Found {} local!'.format(out_file))
     else:

@@ -26,11 +26,13 @@ if 'coarse' in input:
     data,transform = prep_harmonie(input_coarse,grid)
   elif(input_coarse['source'].lower() == 'harmonie_wins50'):
     data,transform = prep_harmonie_WINS50.prep_harmonie(input_coarse,grid)
+  elif(input_coarse['source'].lower() == 'none'): # useful to test LSM alone
+    pass
   else:
     print('unvalid source type')
     exit()
   #%% Apply spatial horizontal Gaussian filter to data
-  if('filter' in input_coarse):
+  if('filter' in input_coarse and input_coarse['source'].lower() != 'none'):
     data = gaussian_filter(data,input_coarse)
 
   if 'LSM' in input_coarse:

@@ -26,6 +26,10 @@ def _interp_block(
     Interpolate sub-block of `field_in` onto `field_out`, using the most occuring
     value in `field_in` on a stencil of +/-nn grid points.
     """
+    xmin = x_in[0]
+    xmax = x_in[-1]
+    ymin = y_in[0]
+    ymax = y_in[-1]
 
     x_in_size = x_in.size
     y_in_size = y_in.size
@@ -40,6 +44,12 @@ def _interp_block(
             io = bi*blocksize_x + si
             jo = bj*blocksize_y + sj
 
+            if (x_out[jo,io] < xmin or x_out[jo,io] > xmax or
+                y_out[jo,io] < ymin or y_out[jo,io] > ymax):
+                field_out[jo,io] = -1
+                frac_out [jo,io] = 0
+                continue
+
             # Find nearest grid point in global data:
             ig = _nearest(x_in, x_out[jo,io], x_in_size)
             jg = _nearest(y_in, y_out[jo,io], y_in_size)
@@ -51,7 +61,10 @@ def _interp_block(
             # Loop over stencil in global (field_in) field:
             for j in range(jg-nn, jg+nn+1):
                 for i in range(ig-nn, ig+nn+1):
-                    code = field_in[j,i]
+                    if (i >= 0 and i < x_in_size and j >= 0 and j < y_in_size):
+                        code = field_in[j,i]
+                    else:
+                        code = -1
 
                     for k in range(n_valid_codes):
                         if code == valid_codes[k]:

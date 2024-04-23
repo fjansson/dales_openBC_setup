@@ -1,0 +1,48 @@
+{ "author": "Fredrik Jansson",
+  "coarse": {
+     "source": "HARMONIE_WINS50",
+     "inpath": "/projects/0/nwo21036/harmonie/2021/09/22/00/",
+     "outpath":"/scratch-shared/jansson/openBC_coarse-09-22/",
+     "start":"2021-09-22T00:00",
+     "time0":"2021-09-22T00:00",
+     "end":  "2021-09-23T00:00",
+     "iexpnr": 1,
+     "lat_sw": 50.6,
+     "lon_sw": 1.8,
+     "e12": 0.01,
+     "nsv": 2,
+     "nprocx": 12,
+     "nprocy": 16,
+     "tchunk": 1,
+     "grid": {
+      "xsize": 480000,
+      "ysize": 320000,
+      "itot": 768,
+      "jtot": 512,
+      "kmax": 150,
+      "dz0": 20,
+      "alpha": 0.012
+      },
+     "_tskin": { 
+      "ERA5_path": "/projects/0/nwo21036/fredrik/era5/"
+     },
+      "LSM":{
+	  "ERA5_path": "/projects/0/nwo21036/fredrik/era5/",
+	  "spatial_data_path": "/projects/0/nwo21036/spatial_data/"
+      },
+     "Nc_0": {
+      "Nc_cst": 130e6,
+      "z_cst": 4e3,
+      "z_e":  2e3
+     },
+     "synturb": {
+      "dx": 480000,
+      "dy": 320000
+      },
+     "filter": {
+      "time_start": "2021-09-22T00:00", 
+      "time_end": "2021-09-22T02:00",
+      "sigma": 20e3
+     }
+   }
+}

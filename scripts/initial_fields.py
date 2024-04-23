@@ -57,7 +57,7 @@ def initial_fields(input,grid,data,transform):
 
 def initial_fields_fine(input,grid):
   # Load data
-  with xr.open_mfdataset(f"{input['inpath_coarse']}initfields.inp.*.nc") as ds:
+  with xr.open_mfdataset(f"{input['inpath']}initfields.inp.*.nc") as ds:
     initfields_fine = ds.interp(xt=grid.xt+input['x_offset'],
                                 xm=grid.xm+input['x_offset'],
                                 yt=grid.yt+input['y_offset'],

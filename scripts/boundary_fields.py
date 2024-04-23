@@ -3,7 +3,7 @@
 import numpy as np
 import xarray as xr
 from datetime import datetime
-import pandas as pd 
+import pandas as pd
 def boundary_fields(input,grid,data):
   data = data.drop(['lat','lon'])
   # West boundary
@@ -94,9 +94,18 @@ def boundary_fields_fine(input,grid):
   ix_east = int(ix_west+grid.xsize/input['dx_coarse'])
   iy_south = int(input['y_offset']/input['dy_coarse'])
   iy_north = int(iy_south+grid.ysize/input['dy_coarse'])
+
+  print(f"""
+  Vertical crossections needed from coarse model:
+  ix_east:  {ix_east}
+  ix_west:  {ix_west}
+  iy_north: {iy_north}
+  iy_south: {iy_south}
+  """)
+
   # Get initial boundary fields from initial fields
   if(input['time0']==input['start']):
-    with xr.open_mfdataset(f"{input['inpath_coarse']}initfields.inp.*.nc") as ds:
+    with xr.open_mfdataset(f"{input['inpath']}initfields.inp.*.nc") as ds:
       # West boundary
       uwest0  = ds['u0'].isel(xm=ix_west,drop=True).interp(yt=grid.yt+input['y_offset']).rename('uwest').expand_dims({'time':[pd.Timestamp(input['time0'])]},axis=0).assign_coords(yt=grid.yt,zt=grid.zt)
       vwest0  = ds['v0'].isel(xt=ix_west,drop=True).interp(ym=grid.ym+input['y_offset']).rename('vwest').expand_dims({'time':[pd.Timestamp(input['time0'])]},axis=0).assign_coords(ym=grid.ym,zt=grid.zt)
@@ -106,7 +115,7 @@ def boundary_fields_fine(input,grid):
       e12west0= ds['e120'].isel(xt=ix_west,drop=True).interp(yt=grid.yt+input['y_offset']).rename('e12west').expand_dims({'time':[pd.Timestamp(input['time0'])]},axis=0).assign_coords(yt=grid.yt,zt=grid.zt)
       if(input['nsv']>0):
         svwest0 =[]
-        for isv in range(input['nsv']): 
+        for isv in range(input['nsv']):
           svwest0.append(xr.zeros_like(e12west0).rename('svwest'))
         svwest0 = xr.concat(svwest0,'isv')
       # East boundary
@@ -118,7 +127,7 @@ def boundary_fields_fine(input,grid):
       e12east0= ds['e120'].isel(xt=ix_east,drop=True).interp(yt=grid.yt+input['y_offset']).rename('e12east').expand_dims({'time':[pd.Timestamp(input['time0'])]},axis=0).assign_coords(yt=grid.yt,zt=grid.zt)
       if(input['nsv']>0):
         sveast0 =[]
-        for isv in range(input['nsv']): 
+        for isv in range(input['nsv']):
           sveast0.append(xr.zeros_like(e12east0).rename('sveast'))
         sveast0 = xr.concat(sveast0,'isv')
       # South boundary
@@ -130,7 +139,7 @@ def boundary_fields_fine(input,grid):
       e12south0= ds['e120'].isel(yt=iy_south,drop=True).interp(xt=grid.xt+input['x_offset']).rename('e12south').expand_dims({'time':[pd.Timestamp(input['time0'])]},axis=0).assign_coords(xt=grid.xt,zt=grid.zt)
       if(input['nsv']>0):
         svsouth0 =[]
-        for isv in range(input['nsv']): 
+        for isv in range(input['nsv']):
           svsouth0.append(xr.zeros_like(e12south0).rename('svsouth'))
         svsouth0 = xr.concat(svsouth0,'isv')
       # North boundary
@@ -142,7 +151,7 @@ def boundary_fields_fine(input,grid):
       e12north0= ds['e120'].isel(yt=iy_north,drop=True).interp(xt=grid.xt+input['x_offset']).rename('e12north').expand_dims({'time':[pd.Timestamp(input['time0'])]},axis=0).assign_coords(xt=grid.xt,zt=grid.zt)
       if(input['nsv']>0):
         svnorth0 =[]
-        for isv in range(input['nsv']): 
+        for isv in range(input['nsv']):
           svnorth0.append(xr.zeros_like(e12north0).rename('svnorth'))
         svnorth0 = xr.concat(svnorth0,'isv')
       # Top boundary
@@ -154,13 +163,13 @@ def boundary_fields_fine(input,grid):
       e12top0= ds['e120'].isel(zt=grid.kmax-1,drop=True).interp(xt=grid.xt+input['x_offset'],yt=grid.yt+input['y_offset']).rename('e12top').expand_dims({'time':[pd.Timestamp(input['time0'])]},axis=0).assign_coords(xt=grid.xt,yt=grid.yt)
       if(input['nsv']>0):
         svtop0 =[]
-        for isv in range(input['nsv']): 
+        for isv in range(input['nsv']):
           svtop0.append(xr.zeros_like(e12top0).rename('svtop'))
         svtop0 = xr.concat(svtop0,'isv')
   # Get initial boundary fields from previous simulation
   else:
     # West boundary
-    path = f"{input['outpath_coarse_old']}crossyz/{ix_west+2:04d}/"
+    path = f"{input['inpath']}crossyz/{ix_west+2:04d}/"
     with xr.open_mfdataset(f"{path}uyz*",chunks={"time": input['tchunk']}) as ds:
       uwest0 = ds['uyz'].isel(time=-1,drop=True).interp(yt=grid.yt+input['y_offset']).rename('uwest').assign_coords(yt=grid.yt,zt=grid.zt).expand_dims({'time':[pd.Timestamp(input['start'])]},axis=0)
     with xr.open_mfdataset(f"{path}vyz*",chunks={"time": input['tchunk']}) as ds:
@@ -176,11 +185,11 @@ def boundary_fields_fine(input,grid):
     if(input['nsv']>0):
       svwest0 =[]
       for isv in range(input['nsv']):
-        with xr.open_mfdataset(f"{path}sv{isv+1:03}*",chunks={"time": input['tchunk']}) as ds:  
+        with xr.open_mfdataset(f"{path}sv{isv+1:03}*",chunks={"time": input['tchunk']}) as ds:
           svwest0.append(ds[f"sv{isv+1:03}"].isel(time=-1,drop=True).interp(yt=grid.yt+input['y_offset']).rename('svwest').assign_coords(yt=grid.yt,zt=grid.zt).expand_dims({'time':[pd.Timestamp(input['start'])]}))
       svwest0 = xr.concat(svwest0,'isv')
     # east boundary
-    path = f"{input['outpath_coarse_old']}crossyz/{ix_east+2:04d}/"
+    path = f"{input['inpath']}crossyz/{ix_east+2:04d}/"
     with xr.open_mfdataset(f"{path}uyz*",chunks={"time": input['tchunk']}) as ds:
       ueast0 = ds['uyz'].isel(time=-1,drop=True).interp(yt=grid.yt+input['y_offset']).rename('ueast').assign_coords(yt=grid.yt,zt=grid.zt).expand_dims({'time':[pd.Timestamp(input['start'])]},axis=0)
     with xr.open_mfdataset(f"{path}vyz*",chunks={"time": input['tchunk']}) as ds:
@@ -196,11 +205,11 @@ def boundary_fields_fine(input,grid):
     if(input['nsv']>0):
       sveast0 =[]
       for isv in range(input['nsv']):
-        with xr.open_mfdataset(f"{path}sv{isv+1:03}*",chunks={"time": input['tchunk']}) as ds:  
+        with xr.open_mfdataset(f"{path}sv{isv+1:03}*",chunks={"time": input['tchunk']}) as ds:
           sveast0.append(ds[f"sv{isv+1:03}"].isel(time=-1,drop=True).interp(yt=grid.yt+input['y_offset']).rename('sveast').assign_coords(yt=grid.yt,zt=grid.zt).expand_dims({'time':[pd.Timestamp(input['start'])]}))
       sveast0 = xr.concat(sveast0,'isv')
     # south boundary
-    path = f"{input['outpath_coarse_old']}crossxz/{iy_south+2:04d}/"
+    path = f"{input['inpath']}crossxz/{iy_south+2:04d}/"
     with xr.open_mfdataset(f"{path}uxz*",chunks={"time": input['tchunk']}) as ds:
       usouth0 = ds['uxz'].isel(time=-1,drop=True).interp(xm=grid.xm+input['x_offset']).rename('usouth').assign_coords(xm=grid.xm,zt=grid.zt).expand_dims({'time':[pd.Timestamp(input['start'])]},axis=0)
     with xr.open_mfdataset(f"{path}vxz*",chunks={"time": input['tchunk']}) as ds:
@@ -216,11 +225,11 @@ def boundary_fields_fine(input,grid):
     if(input['nsv']>0):
       svsouth0 =[]
       for isv in range(input['nsv']):
-        with xr.open_mfdataset(f"{path}sv{isv+1:03}*",chunks={"time": input['tchunk']}) as ds:  
+        with xr.open_mfdataset(f"{path}sv{isv+1:03}*",chunks={"time": input['tchunk']}) as ds:
           svsouth0.append(ds[f"sv{isv+1:03}"].isel(time=-1,drop=True).interp(xt=grid.xt+input['x_offset']).rename('svsouth').assign_coords(xt=grid.xt,zt=grid.zt).expand_dims({'time':[pd.Timestamp(input['start'])]},axis=0))
       svsouth0 = xr.concat(svsouth0,'isv')
     # north boundary
-    path = f"{input['outpath_coarse_old']}crossxz/{iy_north+2:04d}/"
+    path = f"{input['inpath']}crossxz/{iy_north+2:04d}/"
     with xr.open_mfdataset(f"{path}uxz*",chunks={"time": input['tchunk']}) as ds:
       unorth0 = ds['uxz'].isel(time=-1,drop=True).interp(xm=grid.xm+input['x_offset']).rename('unorth').assign_coords(xm=grid.xm,zt=grid.zt).expand_dims({'time':[pd.Timestamp(input['start'])]},axis=0)
     with xr.open_mfdataset(f"{path}vxz*",chunks={"time": input['tchunk']}) as ds:
@@ -236,11 +245,11 @@ def boundary_fields_fine(input,grid):
     if(input['nsv']>0):
       svnorth0 =[]
       for isv in range(input['nsv']):
-        with xr.open_mfdataset(f"{path}sv{isv+1:03}*",chunks={"time": input['tchunk']}) as ds:  
+        with xr.open_mfdataset(f"{path}sv{isv+1:03}*",chunks={"time": input['tchunk']}) as ds:
           svnorth0.append(ds[f"sv{isv+1:03}"].isel(time=-1,drop=True).interp(xt=grid.xt+input['x_offset']).rename('svnorth').assign_coords(xt=grid.xt,zt=grid.zt).expand_dims({'time':[pd.Timestamp(input['start'])]},axis=0))
       svnorth0 = xr.concat(svnorth0,'isv')
     # top boundary
-    path = f"{input['outpath_coarse_old']}crossxy/{grid.kmax:04d}/"
+    path = f"{input['inpath']}crossxy/{grid.kmax:04d}/"
     with xr.open_mfdataset(f"{path}uxy*",chunks={"time": input['tchunk']}) as ds:
       utop0 = ds['uxy'].isel(time=-1,drop=True).interp(xm=grid.xm+input['x_offset'],yt=grid.yt+input['y_offset']).rename('utop').assign_coords(xm=grid.xm,yt=grid.yt).expand_dims({'time':[pd.Timestamp(input['start'])]},axis=0)
     with xr.open_mfdataset(f"{path}vxy*",chunks={"time": input['tchunk']}) as ds:
@@ -256,12 +265,12 @@ def boundary_fields_fine(input,grid):
     if(input['nsv']>0):
       svtop0 =[]
       for isv in range(input['nsv']):
-        with xr.open_mfdataset(f"{path}sv{isv+1:03}*",chunks={"time": input['tchunk']}) as ds:  
+        with xr.open_mfdataset(f"{path}sv{isv+1:03}*",chunks={"time": input['tchunk']}) as ds:
           svtop0.append(ds[f"sv{isv+1:03}"].isel(time=-1,drop=True).interp(xt=grid.xt+input['x_offset'],yt=grid.yt+input['y_offset']).rename('svtop').assign_coords(xt=grid.xt,yt=grid.yt).expand_dims({'time':[pd.Timestamp(input['start'])]},axis=0))
       svtop0 = xr.concat(svtop0,'isv')
   # Get later time steps from corresponding coarse simulation output
   # West boundary
-  path = f"{input['outpath_coarse']}crossyz/{ix_west+2:04d}/"
+  path = f"{input['inpath']}crossyz/{ix_west+2:04d}/"
   with xr.open_mfdataset(f"{path}uyz*",chunks={"time": input['tchunk']}) as ds:
     uwest = ds['uyz'].interp(yt=grid.yt+input['y_offset']).rename('uwest').assign_coords(yt=grid.yt,zt=grid.zt)
     uwest = xr.concat([uwest0,uwest],dim='time')
@@ -288,7 +297,7 @@ def boundary_fields_fine(input,grid):
     svwest = xr.concat(svwest,'isv')
     svwest = xr.concat([svwest0,svwest],dim='time')
   # east boundary
-  path = f"{input['outpath_coarse']}crossyz/{ix_east+2:04d}/"
+  path = f"{input['inpath']}crossyz/{ix_east+2:04d}/"
   with xr.open_mfdataset(f"{path}uyz*",chunks={"time": input['tchunk']}) as ds:
     ueast = ds['uyz'].interp(yt=grid.yt+input['y_offset']).rename('ueast').assign_coords(yt=grid.yt,zt=grid.zt)
     ueast = xr.concat([ueast0,ueast],dim='time')
@@ -315,7 +324,7 @@ def boundary_fields_fine(input,grid):
     sveast = xr.concat(sveast,'isv')
     sveast = xr.concat([sveast0,sveast],dim='time')
   # south boundary
-  path = f"{input['outpath_coarse']}crossxz/{iy_south+2:04d}/"
+  path = f"{input['inpath']}crossxz/{iy_south+2:04d}/"
   with xr.open_mfdataset(f"{path}uxz*",chunks={"time": input['tchunk']}) as ds:
     usouth = ds['uxz'].interp(xm=grid.xm+input['x_offset']).rename('usouth').assign_coords(xm=grid.xm,zt=grid.zt)
     usouth = xr.concat([usouth0,usouth],dim='time')
@@ -342,7 +351,7 @@ def boundary_fields_fine(input,grid):
     svsouth = xr.concat(svsouth,'isv')
     svsouth = xr.concat([svsouth0,svsouth],dim='time')
   # north boundary
-  path = f"{input['outpath_coarse']}crossxz/{iy_north+2:04d}/"
+  path = f"{input['inpath']}crossxz/{iy_north+2:04d}/"
   with xr.open_mfdataset(f"{path}uxz*",chunks={"time": input['tchunk']}) as ds:
     unorth = ds['uxz'].interp(xm=grid.xm+input['x_offset']).rename('unorth').assign_coords(xm=grid.xm,zt=grid.zt)
     unorth = xr.concat([unorth0,unorth],dim='time')
@@ -369,7 +378,7 @@ def boundary_fields_fine(input,grid):
     svnorth = xr.concat(svnorth,'isv')
     svnorth = xr.concat([svnorth0,svnorth],dim='time')
   # top boundary
-  path = f"{input['outpath_coarse']}crossxy/{grid.kmax:04d}/"
+  path = f"{input['inpath']}crossxy/{grid.kmax:04d}/"
   with xr.open_mfdataset(f"{path}uxy*",chunks={"time": input['tchunk']}) as ds:
     utop = ds['uxy'].interp(xm=grid.xm+input['x_offset'],yt=grid.yt+input['y_offset']).rename('utop').assign_coords(xm=grid.xm,yt=grid.yt)
     utop = xr.concat([utop0,utop],dim='time')

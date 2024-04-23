@@ -1,0 +1,17 @@
+#!/bin/bash
+#SBATCH --nodes=1
+#SBATCH --ntasks=128
+#SBATCH --ntasks-per-node=128
+#SBATCH --partition=rome
+#SBATCH --time=24:00:00
+
+module load 2022
+module load Python/3.10.4-GCCcore-11.3.0
+
+source /home/jansson/dales_openBC_setup/ruisdael/bin/activate
+
+python ../../scripts/create_input.py ruisdael-coarse-09-22.json
+
+
+
+

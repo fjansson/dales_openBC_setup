@@ -134,15 +134,25 @@ def prep_harmonie(input,grid):
   # Calculate qt
   data = data.assign({'qt': data['clw']+data['hus']})
   # Calculate base profiles and exnr function
-  tas_exnr = data['ta'].isel({'time': 0, 'z': 0},drop=True).sel(x=slice(0,grid.xsize),y=slice(0,grid.ysize)).mean(dim=['x','y']).values
-  ps_exnr  = data['p'].isel({'time': 0, 'z': 0},drop=True).sel(x=slice(0,grid.xsize),y=slice(0,grid.ysize)).mean(dim=['x','y']).values
-  exnrs    = (ps_exnr/p0)**(Rd/cp)
-  thls_exnr= tas_exnr/exnrs
-  rhobf    = calcBaseprof(z_int,thls_exnr,ps_exnr,pref0=p0)
-  p_exnr   = rhobf[1:]*Rd*data['ta'][0,1:].sel(x=slice(0,grid.xsize),y=slice(0,grid.ysize)).mean(dim=['x','y']).values*\
-           ( 1+(Rv/Rd-1)*data['qt'][0,1:].sel(x=slice(0,grid.xsize),y=slice(0,grid.ysize)).mean(dim=['x','y']).values-\
-             Rv/Rd*data['clw'][0,1:].sel(x=slice(0,grid.xsize),y=slice(0,grid.ysize)).mean(dim=['x','y']).values ) # Ideal gas law
-  exnr     = (p_exnr/p0)**(Rd/cp)
+  if(input['start']==input['time0']): # Calculate exnr function
+    tas_exnr = data['ta'].isel({'time': 0, 'z': 0},drop=True).sel(x=slice(0,grid.xsize),y=slice(0,grid.ysize)).mean(dim=['x','y']).values
+    ps_exnr  = data['p'].isel({'time': 0, 'z': 0},drop=True).sel(x=slice(0,grid.xsize),y=slice(0,grid.ysize)).mean(dim=['x','y']).values
+    exnrs    = (ps_exnr/p0)**(Rd/cp)
+    thls_exnr= tas_exnr/exnrs
+    rhobf    = calcBaseprof(z_int,thls_exnr,ps_exnr,pref0=p0)
+    p_exnr   = rhobf[1:]*Rd*data['ta'][0,1:].sel(x=slice(0,grid.xsize),y=slice(0,grid.ysize)).mean(dim=['x','y']).values*\
+            ( 1+(Rv/Rd-1)*data['qt'][0,1:].sel(x=slice(0,grid.xsize),y=slice(0,grid.ysize)).mean(dim=['x','y']).values-\
+              Rv/Rd*data['clw'][0,1:].sel(x=slice(0,grid.xsize),y=slice(0,grid.ysize)).mean(dim=['x','y']).values ) # Ideal gas law
+    exnr     = (p_exnr/p0)**(Rd/cp)
+  else: # Read exnr.inp.xxx
+    f = open(input['exnr_file'],'r')
+    line0 = f.readline()
+    f.close()
+    thls_exnr = float(line0.split(',')[1].split('thls = ')[-1])
+    ps_exnr = float(line0.split(',')[2].split('ps = ')[-1])
+    exnr = np.loadtxt(input['exnr_file'],skiprows=2)
+    exnrs = exnr[0,1]
+    exnr = exnr[1:,1]
   exnr     = xr.DataArray(np.concatenate([exnrs[None],exnr]),
                           dims = ['z'],
                           coords={'z': z_int},
@@ -156,7 +166,7 @@ def prep_harmonie(input,grid):
   if('synturb' in input):
     tke_prof = tke.mean(dim=('time','x','y')).values
     tke = tke.rename({'height':'z'}).interp(z=data['z'], kwargs={'fill_value':(tke_prof[0],tke_prof[-1])})
-    
+    rhobf    = calcBaseprof(z_int,thls_exnr,ps_exnr,pref0=p0) 
     # Calculate inversion height from maximum curvature and with cloud base as a backup
     zi_min= 200
     zi_max= 4000

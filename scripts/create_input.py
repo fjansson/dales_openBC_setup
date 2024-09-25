@@ -9,8 +9,14 @@ from profiles import profiles
 from surface_temperature import surface_temperature, surface_temperature_fine
 from synthetic_turbulence import synthetic_turbulence
 from gaussian_filter import gaussian_filter
-from lsm.create_dales_input import create_lsm_input
+
+#from lsm.create_dales_input import create_lsm_input    # older LSM input format
 from lsm.spatial_transforms import proj4_rd, proj4_hm
+
+# new LSM input compatible with DEPAC
+from land_surface.create_dales_input import create_lsm_input_tno
+#from land_surface.spatial_transforms import proj4_rd, proj4_hm  # identical to the one in lsm
+
 from datetime import datetime
 import sys
 #%% Read input file
@@ -41,11 +47,23 @@ if 'coarse' in input:
     dx = input_coarse['grid']['xsize'] / input_coarse['grid']['itot']
     dy = input_coarse['grid']['ysize'] / input_coarse['grid']['jtot']
     start_date = datetime.fromisoformat(input_coarse['start'])
-    create_lsm_input(x_sw, y_sw, input_coarse['grid']['itot'], input_coarse['grid']['jtot'], dx, dy,
-                     input_coarse['nprocx'], input_coarse['nprocy'], start_date,
-                     input_coarse['outpath'], input_coarse['LSM']['ERA5_path'], input_coarse['LSM']['spatial_data_path'],
-                     input_coarse['iexpnr'])
-    print('Finished creating LSM input')
+
+    lsm_kind = 'old'
+    if 'lsm_kind' in input_coarse['LSM']:
+      lsm_kind = input_coarse['LSM']['lsm_kind']
+
+    if lsm_kind == 'TNO':
+      create_lsm_input(x_sw, y_sw, input_coarse['grid']['itot'], input_coarse['grid']['jtot'], dx, dy,
+                       input_coarse['nprocx'], input_coarse['nprocy'], start_date,
+                       input_coarse['outpath'], input_coarse['LSM']['ERA5_path'], input_coarse['LSM']['spatial_data_path'],
+                       input_coarse['iexpnr'])
+      print('Finished creating LSM input (TNO flavor)')
+    else:
+      create_lsm_input(x_sw, y_sw, input_coarse['grid']['itot'], input_coarse['grid']['jtot'], dx, dy,
+                       input_coarse['nprocx'], input_coarse['nprocy'], start_date,
+                       input_coarse['outpath'], input_coarse['LSM']['ERA5_path'], input_coarse['LSM']['spatial_data_path'],
+                       input_coarse['iexpnr'])
+      print('Finished creating LSM input')
 
   #%% Advective time interpolation of input data (optional, to be implemented)
   

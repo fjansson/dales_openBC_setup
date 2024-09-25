@@ -1,7 +1,8 @@
 import numpy as np
+import os
 
 class BOFEK_info:
-    def __init__(self):
+    def __init__(self, path=''):
         #
         # Lookup table name -> index in `van_genuchten_parameters.{tbl/nc}`
         #
@@ -15,12 +16,12 @@ class BOFEK_info:
         # Read the CSV table with BOFEK2012 info
         #
         soil_id_tbl, z_top_tbl, z_bot_tbl = np.genfromtxt(
-                'BOFEK2012_profielen_versie2_1.csv', skip_header=1, usecols=[0,7,8],
+                os.path.join(path, 'BOFEK2012_profielen_versie2_1.csv'), skip_header=1, usecols=[0,7,8],
                 delimiter=',', unpack=True)
         soil_id_tbl = soil_id_tbl.astype(int)
 
         soil_code_tbl = np.genfromtxt(
-                'BOFEK2012_profielen_versie2_1.csv', skip_header=1, usecols=29,
+                os.path.join(path, 'BOFEK2012_profielen_versie2_1.csv'), skip_header=1, usecols=29,
                 delimiter=',', unpack=True, dtype=str)
 
         #

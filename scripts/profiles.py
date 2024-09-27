@@ -14,7 +14,7 @@ def profiles(input,grid,initfields,data):
   if(input['nsv']>0):
     scalar =  open(f"{input['outpath']}scalar.inp.{input['iexpnr']:03}", 'w')
     scalar.write(f"# Scalar input profiles created by {input['author']} at {time}\n")
-    scalar.write('# z qr nr\n')
+    scalar.write('#z qr nr\n')
   # Calculate profiles
   thlprof = initfields['thl0'].mean(dim=['xt','yt']).values
   qtprof = initfields['qt0'].mean(dim=['xt','yt']).values

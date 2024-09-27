@@ -110,7 +110,8 @@ def prep_harmonie(input,grid):
                 'x': data.coords['x']}
   new_dims = ['time','z','y','x']
   variables = ['ua','va','w','ta','p','hus','clw']
-  #if('synturb' in input): variables.append('tke') 
+  #if('synturb' in input): variables.append('tke')
+  data = data.unify_chunks() # try to fix "Object has inconsistent chunks along dimension y"
   for var in variables:
     its = 0
     var_intz = []

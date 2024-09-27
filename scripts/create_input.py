@@ -14,7 +14,7 @@ from gaussian_filter import gaussian_filter
 from lsm.spatial_transforms import proj4_rd, proj4_hm
 
 # new LSM input compatible with DEPAC
-from land_surface.create_dales_input import create_lsm_input_tno
+from land_surface.create_dales_input import create_lsm_input as create_lsm_input_tno
 #from land_surface.spatial_transforms import proj4_rd, proj4_hm  # identical to the one in lsm
 
 from datetime import datetime
@@ -53,7 +53,7 @@ if 'coarse' in input:
       lsm_kind = input_coarse['LSM']['lsm_kind']
 
     if lsm_kind == 'TNO':
-      create_lsm_input(x_sw, y_sw, input_coarse['grid']['itot'], input_coarse['grid']['jtot'], dx, dy,
+      create_lsm_input_tno(x_sw, y_sw, input_coarse['grid']['itot'], input_coarse['grid']['jtot'], dx, dy,
                        input_coarse['nprocx'], input_coarse['nprocy'], start_date,
                        input_coarse['outpath'], input_coarse['LSM']['ERA5_path'], input_coarse['LSM']['spatial_data_path'],
                        input_coarse['iexpnr'])

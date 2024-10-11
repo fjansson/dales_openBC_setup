@@ -15,7 +15,7 @@ def download_era5_soil(date, path):
     else:
         cds_dict = {
                 'product_type': 'reanalysis',
-                'format': 'netcdf',
+                'data_format': 'netcdf',
                 'variable': [
                     'sea_surface_temperature', 'soil_temperature_level_1',
                     'soil_temperature_level_2', 'soil_temperature_level_3',

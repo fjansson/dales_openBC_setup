@@ -9,13 +9,13 @@ def download_era5_soil(date, path):
     """
     out_file = '{0}/{1:04d}{2:02d}{3:02d}_{4:02d}_soil.nc'.format(
             path, date.year, date.month, date.day, date.hour)
-
+    print('Looking for', out_file)
     if os.path.exists(out_file):
         print('Found {} local!'.format(out_file))
     else:
         cds_dict = {
                 'product_type': 'reanalysis',
-                'format': 'netcdf',
+                'data_format': 'netcdf',
                 'variable': [
                     'sea_surface_temperature', 'soil_temperature_level_1',
                     'soil_temperature_level_2', 'soil_temperature_level_3',
@@ -28,7 +28,8 @@ def download_era5_soil(date, path):
                 'month': '{0:02d}'.format(date.month),
                 'day': '{0:02d}'.format(date.day),
                 'time': '{0:02d}:{1:02d}'.format(date.hour, date.minute),
-                'area': [53.47, 2.92, 50.47, 6.92],
+                # 'area': [53.47, 2.92, 50.47, 6.92],
+                'area': [60, 0, 45, 15],
             }
 
         c = cdsapi.Client()
@@ -105,7 +106,12 @@ def calc_root_fraction(a_r, b_r, zh):
 
 
 if __name__ == '__main__':
-    from datetime import datetime
+    from datetime import datetime, timedelta
 
-    date = datetime(2019,1,1,0)
-    download_era5_soil(date, '.')
+    date = datetime(2022,5,1,0)
+    #date = datetime(2018,4,1,0)
+    path='/archive/work_F/weather_simulation/ruisdael_data/ERA5-new/'
+    for i in range (220):
+        print(date)
+        download_era5_soil(date, path)
+        date += timedelta(days=1)

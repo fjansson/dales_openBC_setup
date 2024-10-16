@@ -91,8 +91,12 @@ def prep_harmonie(input,grid):
     z = [z[0]-(data['p'].isel(lev=k,drop=True)-data['p'].isel(lev=k+1,drop=True))/(rhoh.isel(lev=k,drop=True)*grav)] + z
   data = data.assign({'z3d': xr.concat(z,dim='lev').chunk({'lev': data.sizes['lev']+1}).transpose('time','lev','y','x')})
   # Get reference height levels (mean of height field first time step) and crop to grid.zsize
-  z_int = data['z3d'].isel({'time':0},drop=True).sel(x=slice(0,grid.xsize),y=slice(0,grid.ysize)).mean(dim=['x','y'])[::-1].values
-  z_int = z_int[:np.argwhere(z_int>grid.zsize)[0][0]+1]
+  if(input['start']==input['time0']): # Define reference height levels
+    z_int = data['z3d'].isel({'time':0},drop=True).sel(x=slice(0,grid.xsize),y=slice(0,grid.ysize)).mean(dim=['x','y'])[::-1].values
+    z_int = z_int[:np.argwhere(z_int>grid.zsize)[0][0]+1]
+  else: # Take reference height levels from exnr.inp.xxx
+    exnr = np.loadtxt(input['exnr_file'],skiprows=1)
+    z_int = exnr[:,0]
   # Interpolate data to reference height levels
   data_intz = []
   its = 0
@@ -143,7 +147,7 @@ def prep_harmonie(input,grid):
     f.close()
     thls_exnr = float(line0.split(',')[1].split('thls = ')[-1])
     ps_exnr = float(line0.split(',')[2].split('ps = ')[-1])
-    exnr = np.loadtxt(input['exnr_file'],skiprows=2)
+    exnr = np.loadtxt(input['exnr_file'],skiprows=1)
     exnrs = exnr[0,1]
     exnr = exnr[1:,1]
   exnr     = xr.DataArray(np.concatenate([exnrs[None],exnr]),

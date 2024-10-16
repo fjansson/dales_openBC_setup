@@ -1,3 +1,9 @@
+
+# due to relative imports ".vegetation_properties" etc, this module can't be run directly
+# to run this file stand-alone, for testing, go one directory up and run
+# python -m land_surface.create_dales_input
+
+
 import matplotlib.pyplot as plt
 #import netCDF4 as nc4
 import xarray as xr
@@ -10,7 +16,7 @@ from datetime import datetime
 # Custom Python scripts/tools/...:
 from .vegetation_properties import ifs_vegetation, top10_to_ifs, top10_names
 from .interpolate import interp_dominant, interp_soil, Interpolate_era5
-from .spatial_transforms import proj4_rd #, proj4_hm
+from .spatial_transforms import proj4_rd, proj4_hm
 from .bofek2012 import BOFEK_info
 from .lsm_input_dales import LSM_input_DALES
 from .era5_soil import init_theta_soil, calc_theta_rel, download_era5_soil
@@ -18,7 +24,7 @@ from .domains import domains
 # from landuse_types import lu_types_basic, lu_types_build, lu_types_crop, lu_types_depac
 from .landuse_types import lu_types_depac
 import os
-
+import sys
 # Correction factor for aspect ratio of plots
 ASPECT_CORR = 2
 
@@ -50,6 +56,7 @@ def init_dales_grid(domain, ktot_soil, lutypes, parnames):
         Number of blocks in y-direction.
 
     """
+    # x0, y0 are in RD coordinates
     x0 = domain['x0']
     y0 = domain['y0']
     dx = domain['dx']
@@ -188,6 +195,14 @@ def create_interpolator(lsm_input, e5_soil):
     interpolate_era5: interpolate.Interpolate_era5 object
 
     """
+
+    if (np.min(lsm_input.lon) < np.min(e5_soil.longitude.values) or
+        np.min(lsm_input.lat) < np.min(e5_soil.latitude.values) or
+        np.max(lsm_input.lon) > np.max(e5_soil.longitude.values) or
+        np.max(lsm_input.lat) > np.max(e5_soil.latitude.values)):
+        print("LES domain is outside ERA5 domain. Stop.")
+        sys.exit()
+
     interpolate_era5 = Interpolate_era5(lsm_input.lon,
                                         lsm_input.lat,
                                         e5_soil.longitude.values,
@@ -945,7 +960,7 @@ def process_input(lu_types, parnames, domain, era5_path, output_path, spatial_da
     if lwrite:
         write_output(lsm_input,
                      output_path,
-                     exp_id,                
+                     exp_id,
                      write_binary_output=False,
                      write_netcdf_output=True,
                      nprocx=1,
@@ -965,10 +980,21 @@ def create_lsm_input(x0, y0, itot, jtot, dx, dy, nprocx, nprocy, start_date,
                      output_path, era5_path, spatial_data_path,
                      exp_id=1, write_binary_output=True, write_netcdf_output=True):
 
+    # x0, y0 passed in HARMONIE coordinates (for compatibility with other LSM processor)
+    # converted to RD here
+
+    lon0, lat0 = proj4_hm(x0, y0, inverse=True)
+    xrd0, yrd0 = proj4_rd(lon0, lat0, inverse=False)
+    print(f'LSM input')
+    print(f'SW corner coordinates')
+    print(f'HARMONIE: {x0}, {y0}')
+    print(f'lon,lat: {lon0}, {lat0}')
+    print(f'RD: {xrd0}, {yrd0}')
+
     domain = {
         'expname': 'expname',
-        'x0' : x0,
-        'y0' : y0,
+        'x0' : xrd0,
+        'y0' : yrd0,
         'itot' : itot,
         'jtot' : jtot,
         'dx' : dx,
@@ -980,7 +1006,7 @@ def create_lsm_input(x0, y0, itot, jtot, dx, dy, nprocx, nprocy, start_date,
     ktot_soil = 4  # number of soil layers
     lwrite = True
     lplot  = False
-    
+
     os.makedirs(output_path, exist_ok=True)
 
     # land use types
@@ -1042,8 +1068,8 @@ if __name__ == "__main__":
     # Settings
     exp_id = 1  # experiment ID
     ktot_soil = 4  # number of soil layers
-    domain_name = 'veluwe_small'
-    
+    domain_name = 'gouda'
+
     lwrite = True
     lplot  = True
 
@@ -1084,6 +1110,7 @@ if __name__ == "__main__":
                               domain,
                               era5_path,
                               output_path,
+                              spatial_data_path,
                               start_date,
                               exp_id,
                               ktot_soil,

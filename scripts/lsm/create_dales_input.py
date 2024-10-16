@@ -34,6 +34,7 @@ from .era5_soil import init_theta_soil, download_era5_soil, calc_theta_rel
 def create_lsm_input(x0, y0, itot, jtot, dx, dy, nprocx, nprocy, start_date,
                      output_path, era5_path, spatial_data_path,
                      exp_id=1, write_binary_output=True, write_netcdf_output=True):
+    # x0, y0 are in HARMONIE coordinates
 
     ktot_soil = 4
 

@@ -1,13 +1,15 @@
 
+# x0, y0 are in RD coordinates
+
 eindhoven = {'expname': 'eindhoven',
              'x0'     : 152000,
              'y0'     : 375000,
              'itot'   : 440,
              'jtot'   : 320,
              'dx'     : 50,
-             'dy'     : 50,                    
+             'dy'     : 50,
              'nprocx' : 4,
-             'nprocy' : 4 
+             'nprocy' : 4
             }
 
 test       = {'expname': 'test',
@@ -16,9 +18,9 @@ test       = {'expname': 'test',
              'itot'   : 64,
              'jtot'   : 64,
              'dx'     : 400,
-             'dy'     : 400,                    
+             'dy'     : 400,
              'nprocx' : 2,
-             'nprocy' : 2 
+             'nprocy' : 2
             }
 
 ruisdael   = {'expname': 'ruisdael',
@@ -27,9 +29,9 @@ ruisdael   = {'expname': 'ruisdael',
              'itot'   : 864,
              'jtot'   : 576,
              'dx'     : 200,
-             'dy'     : 200,                    
+             'dy'     : 200,
              'nprocx' : 12,
-             'nprocy' : 12 
+             'nprocy' : 12
             }
 
 smalldomain = {'expname': 'smalldomain',
@@ -44,7 +46,7 @@ smalldomain = {'expname': 'smalldomain',
             }
 
 veluwe = {'expname': 'veluwe',
-            'x0' : 174000, 
+            'x0' : 174000,
             'y0' : 448500,
             'itot' : 400,
             'jtot' : 200,
@@ -55,7 +57,7 @@ veluwe = {'expname': 'veluwe',
             }
 
 veluwe_small = {'expname': 'veluwe_small',
-            'x0' : 186000, 
+            'x0' : 186000,
             'y0' : 448500,
             'itot' : 160,
             'jtot' : 80,
@@ -65,10 +67,22 @@ veluwe_small = {'expname': 'veluwe_small',
             'nprocy' : 2
             }
 
+gouda = {'expname': 'gouda',
+            'x0' : 100942,
+            'y0' : 446028,
+            'itot' : 128,
+            'jtot' : 128,
+            'dx' : 625,
+            'dy' : 625,
+            'nprocx' : 2,
+            'nprocy' : 2
+            }
+
 domains = {'eindhoven': eindhoven,
            'eindhoven_small': smalldomain,
            'test'     : test,
-           'ruisdael' : ruisdael, 
+           'ruisdael' : ruisdael,
            'veluwe' : veluwe,
-           'veluwe_small' : veluwe_small
+           'veluwe_small' : veluwe_small,
+           'gouda' : gouda,
             }

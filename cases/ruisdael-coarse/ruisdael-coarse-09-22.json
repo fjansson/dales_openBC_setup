@@ -28,7 +28,8 @@
      },
       "LSM":{
 	  "ERA5_path": "/projects/0/nwo21036/fredrik/era5/",
-	  "spatial_data_path": "/projects/0/nwo21036/spatial_data/"
+	  "spatial_data_path": "/projects/0/nwo21036/spatial_data/",
+	  "lsm_kind" : "TNO"
       },
      "Nc_0": {
       "Nc_cst": 130e6,

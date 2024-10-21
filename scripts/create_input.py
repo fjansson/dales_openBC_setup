@@ -19,6 +19,13 @@ from land_surface.create_dales_input import create_lsm_input as create_lsm_input
 
 from datetime import datetime
 import sys
+import os
+
+def setup_DALES(dalesdir, spatial_data_dir):
+  for f in ('rrtmg_lw.nc', 'rrtmg_sw.nc', 'van_genuchten_parameters.nc'):
+    os.symlink(os.path.join(spatial_data_dir, f), dalesdir)
+
+
 #%% Read input file
 with open(sys.argv[1]) as f: input = json.load(f)
 #%% Create input for outer simulation
@@ -65,8 +72,11 @@ if 'coarse' in input:
                        input_coarse['iexpnr'])
       print('Finished creating LSM input')
 
+    setup_DALES(input_coarse['outpath'], input_coarse['LSM']['spatial_data_path'])
+    # relies on the spatial_data_path containing rrtmg*.nc. Problem: doesn't copy those if LSM is not present
+
   #%% Advective time interpolation of input data (optional, to be implemented)
-  
+
   #%% Create initial fields > initfields.inp.xxx.nc
   if(input_coarse['start']==input_coarse['time0']): # Not required for warmstarts
     initfields = initial_fields(input_coarse,grid,data,transform)
@@ -78,11 +88,11 @@ if 'coarse' in input:
   openboundaries = boundary_fields(input_coarse,grid,data)
   print('finished boundary fields')
   #%% Create synthetic turbulence for boundary input (optional) > openboundaries.inp.xxx.nc
-  if('synturb' in input_coarse): 
+  if('synturb' in input_coarse):
     synturb = synthetic_turbulence(input_coarse,grid,data,transform)
     print('finished synthetic turbulence')
   #%% Create heterogeneous and time dependend skin temperature > tskin.inp.xxx.nc (if ltskin==true)
-  if('tskin' in input_coarse): 
+  if('tskin' in input_coarse):
     tskin = surface_temperature(input_coarse,grid,data,transform)
     print('finished surface temperature')
 

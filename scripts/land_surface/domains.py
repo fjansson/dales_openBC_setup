@@ -78,6 +78,17 @@ gouda = {'expname': 'gouda',
             'nprocy' : 2
             }
 
+ruisdael = {'expname': 'ruisdael', # large Ruisdael domain
+            'x0' : -98927.04501275037,
+            'y0' : 296195.8715821294,
+            'itot' : 768,
+            'jtot' : 512,
+            'dx' : 625,
+            'dy' : 625,
+            'nprocx' : 12,
+            'nprocy' : 16,
+            }
+
 domains = {'eindhoven': eindhoven,
            'eindhoven_small': smalldomain,
            'test'     : test,
@@ -85,4 +96,5 @@ domains = {'eindhoven': eindhoven,
            'veluwe' : veluwe,
            'veluwe_small' : veluwe_small,
            'gouda' : gouda,
-            }
+           'ruisdael' : ruisdael,
+           }

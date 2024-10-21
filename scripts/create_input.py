@@ -23,7 +23,10 @@ import os
 
 def setup_DALES(dalesdir, spatial_data_dir):
   for f in ('rrtmg_lw.nc', 'rrtmg_sw.nc', 'van_genuchten_parameters.nc'):
-    os.symlink(os.path.join(spatial_data_dir, f), dalesdir)
+    try:
+      os.symlink(os.path.join(spatial_data_dir, f), dalesdir)
+    except Exception as e:
+      print(repr(e))
 
 
 #%% Read input file

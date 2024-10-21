@@ -582,6 +582,15 @@ def process_top10NL_map(spatial_data_path, lufile, lu_types, lsm_input, nn_domin
             #TODO: smarter way to fill missing values
         setattr(lsm_input, 'c_'+lu, lu_types[lu]['lu_frac'])
 
+    # fill in coarse features outside the Top10 land use map.
+    # North sea (to the North-West)
+    # two points on the coast defining a line: 1.7E, 50.93N    3.414E 51.396N
+    slope = (50.9-51.396)/(1.7-3.414)
+    sea_mask = (lsm_input.lon < 3.414) & ((lsm_input.lat-51.396) >  slope * (lsm_input.lon-3.414) )
+    lu_types['aqu']['lu_frac'][sea_mask] = 1.0
+
+    # TODO: fill in some default land?
+
     # #set dominant LU id for each LU type
     # for lu in lu_types.keys():
     #     domid = lu_types[lu]['lu_domid']
@@ -1068,7 +1077,7 @@ if __name__ == "__main__":
     # Settings
     exp_id = 1  # experiment ID
     ktot_soil = 4  # number of soil layers
-    domain_name = 'gouda'
+    domain_name = 'ruisdael'
 
     lwrite = True
     lplot  = True

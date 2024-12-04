@@ -154,6 +154,7 @@ def prep_harmonie(input,grid):
     exnr = np.loadtxt(input['exnr_file'],skiprows=2)
     exnrs = exnr[0,1]
     exnr = exnr[1:,1]
+  print(f'ps = {ps_exnr}')
   exnr     = xr.DataArray(np.concatenate([exnrs[None],exnr]),
                           dims = ['z'],
                           coords={'z': z_int},

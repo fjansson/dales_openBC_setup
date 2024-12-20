@@ -16,24 +16,49 @@ from lsm.spatial_transforms import proj4_rd, proj4_hm
 # new LSM input compatible with DEPAC
 from land_surface.create_dales_input import create_lsm_input as create_lsm_input_tno
 #from land_surface.spatial_transforms import proj4_rd, proj4_hm  # identical to the one in lsm
-
+import f90nml
 from datetime import datetime
 import sys
 import os
 
 def setup_DALES(dalesdir, spatial_data_dir):
+  print('Creating symlinks')
   for f in ('rrtmg_lw.nc', 'rrtmg_sw.nc', 'van_genuchten_parameters.nc'):
     try:
       os.symlink(os.path.join(spatial_data_dir, f), os.path.join(dalesdir, f))
     except Exception as e:
       print(repr(e))
 
+def patch_namelist(outdir, inp):
+  namelist = f90nml.read('namoptions.001')
+
+  grid = inp['grid']
+  namelist['DOMAIN']['itot']  = grid['itot']
+  namelist['DOMAIN']['jtot']  = grid['jtot']
+  namelist['DOMAIN']['kmax']  = grid['kmax']
+  namelist['DOMAIN']['xsize'] = grid['xsize']
+  namelist['DOMAIN']['ysize'] = grid['ysize']
+
+  namelist['PHYSICS']['ps'] = inp['ps']
+  namelist['PHYSICS']['thls'] = inp['thls']
+
+  namelist['OPENBC']['dxturb'] = grid['xsize']
+  namelist['OPENBC']['dyturb'] = grid['ysize']
+
+  namelist['RUN']['nprocx'] = inp['nprocx']
+  namelist['RUN']['nprocy'] = inp['nprocy']
+
+  # date, xday
+
+  namelist.write(f'{outdir}/namoptions.001', force=True)
 
 #%% Read input file
 with open(sys.argv[1]) as f: input = json.load(f)
 #%% Create input for outer simulation
+
 if 'coarse' in input:
   input_coarse = input['coarse']
+  os.makedirs(input_coarse['outpath'], exist_ok=True)
   input_coarse['author'] = input['author']
   #%% Create DALES grid
   grid = GridDales(input_coarse['grid'])
@@ -50,6 +75,7 @@ if 'coarse' in input:
   #%% Apply spatial horizontal Gaussian filter to data
   if('filter' in input_coarse and input_coarse['source'].lower() != 'none'):
     data = gaussian_filter(data,input_coarse)
+  data.to_netcdf(f'{input_coarse['outpath']}/input_data.nc') # experiment: save the processed data
 
   if 'LSM' in input_coarse:
     x_sw, y_sw = proj4_hm(input_coarse['lon_sw'], input_coarse['lat_sw'], inverse=False)
@@ -75,9 +101,9 @@ if 'coarse' in input:
                        input_coarse['iexpnr'])
       print('Finished creating LSM input')
 
-    setup_DALES(input_coarse['outpath'], input_coarse['LSM']['spatial_data_path'])
-    # relies on the spatial_data_path containing rrtmg*.nc. Problem: doesn't copy those if LSM is not present
-
+  setup_DALES(input_coarse['outpath'], input_coarse['data_path'])
+    # relies on the data_path containing rrtmg*.nc.
+  patch_namelist(input_coarse['outpath'], input_coarse)
   #%% Advective time interpolation of input data (optional, to be implemented)
 
   #%% Create initial fields > initfields.inp.xxx.nc

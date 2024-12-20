@@ -1,0 +1,275 @@
+
+&RUN
+iexpnr     = 001
+lwarmstart = .false.
+startfile  = 'initd_latest_x000y000.001'
+runtime = 86400
+trestart   = 14400 !86400
+ladaptive  = .true.
+irandom    = 1
+randthl    = 0.1
+randqt     = 2.5e-5
+randu      = 0.
+loutdirs   = .true.
+nsv        = 2
+nprocx     = 12
+nprocy     = 16
+/
+
+&DOMAIN
+itot       = 768
+jtot       = 512
+kmax       = 150
+xsize      = 480000
+ysize      = 320000
+
+kmax_soil  = 4         ! soil layers for new LSM
+
+xlat = 52.25
+xlon = 5.45
+xtime = 0
+xday = 265     ! 267 = 24/09
+xyear = 2021
+/
+
+&PHYSICS
+z0         = 1e-3
+!ps         = 102000.00
+ps          = 100974.68032932281
+thls       = 287
+lmoist     = .true.
+lcoriol    = .true.
+igrw_damp  = 0       ! 3 = nudge (damping) to mean profile
+iradiation = 4       ! 4 = RRTMG
+timerad    = 60
+lfast_thermo = .true.
+lconstexner = .true.
+/
+
+&NAMSURFACE
+wtsurf     = 0.
+wqsurf     = 0.
+
+! for new LSM scheme
+isurf = 11
+z0mav = 1e-4    ! not used
+z0hav = 1e-4    ! not used
+albedoav = 0.17 ! Albedo is not yet spatially variable
+/
+
+! New LSM, used if &NAMSURFACE : isurf = 11
+&NAMLSM
+lheterogeneous = .true.
+lfreedrainage = .true.
+dz_soil = 1.89 0.72 0.21 0.07
+iinterp_t = 3
+iinterp_theta = 4
+nlu        = 10
+/
+
+&DYNAMICS
+llsadv     = .false.
+lqlnr      = .false.
+cu         = 0.
+cv         = 0.
+
+iadv_mom   = 5
+iadv_tke   = 5
+iadv_thl   = 5
+iadv_qt    = 5
+iadv_sv    = 7
+/
+
+&NAMMICROPHYSICS
+imicro = 2          ! 2 = warm, 5=simpleice
+!imicro = 6         ! 2 = warm, 5=simpleice
+l_sb = .true.       ! true = Seiffert/Beheng, false = KK00
+Nc_0 = 300e6        ! cloud droplet concentration
+/
+
+&NAMRADIATION
+lCnstAlbedo = .true.
+/
+
+&NAMRADSTAT
+lstat = .true.
+dtav   = 60
+timeav = 60
+/
+
+&NAMSUBGRID
+ldelta     = .false.
+lanisotrop = .true.
+/
+
+&NAMNETCDFSTATS
+lnetcdf = .true.
+!lclassic= .true.
+!lsync = .true.
+/
+
+&NAMBUDGET
+lbudget    = .false.
+dtav       = 60.
+timeav     = 60.
+/
+
+&NAMCHECKSIM
+tcheck     = 0
+/
+
+&NAMSAMPLING
+dtav       = 60.
+timeav     = 60.
+lsampcl    = .false.
+lsampco    = .false.
+lsampup    = .false.
+lsampbuup  = .false.
+/
+
+&NAMTIMESTAT
+ltimestat   = .true.
+dtav        = 60
+/
+
+&NAMCROSSSECTION
+lcross      = .true.
+!lxz         = .false.
+!lyz         = .false.
+!lspan       = .false.
+dtav        = 60
+crossheight = 1 5 21 150
+crossplane = 160 352  ! xz crossection, north and south border
+crossortho = 160 352  ! yz crossection, east and west border
+/
+
+&NAMGENSTAT
+lstat       = .true.
+dtav        = 60
+timeav      = 60
+/
+
+&NAMTIMESTAT
+ltimestat  = .true.
+dtav       = 60.
+/
+
+&NAMFIELDDUMP
+lfielddump  = .true.
+dtav        = 60
+ldiracc     = .true.
+lu          = .false.
+lv          = .false.
+lw          = .false.
+lqt         = .false.
+lbuoy       = .false.
+lql         = .true.
+lsv         = .false., .true., .false.
+lthl        = .false.
+/
+
+&NAMCAPE        ! for liquid,rain,total water path LWP, RWP, TWP
+lcape = .true.
+dtav  = 60
+/
+
+&NAMLSMCROSSSECTION
+lcross = .true.
+dtav = 60
+crossheight = 1
+/
+
+&NAMSTATTEND
+dtav = 60
+ltend = .false.
+/
+
+&NAMRADFIELD
+lradfield = .true.
+dtav = 300
+/
+
+&NAMTRACERS
+ltracers    = .true.
+! tracernames = 'dinges', 'nox', 'co2', 'nh3', 'qr'
+tracernames = 'nr', 'qr'
+/
+
+&NAMNUDGE
+lnudge = .false.
+tnudgefac = 10800
+/
+
+&NAMNUDGEBOUNDARY
+lnudge_boundary = .false.
+lnudge_boundary_sv = .false.
+lperturb_boundary = .false.
+
+nudge_offset = 2500  ! first attempt
+nudge_width  =  600  ! -> high velocities outside domain
+nudge_radius = 3000
+
+!nudge_offset = 4600  ! tile size in y = 6400 m, leave 3*width on the inside
+!nudge_width  =  600
+!nudge_radius = 4000
+
+nudge_tau = 5
+
+perturb_offset = 5000
+perturb_width = 600
+perturb_radius = 4000
+perturb_zmax = 500
+perturb_blocksize=2
+perturb_ampl = 0.1
+
+dt_input_lbc = 3600
+dt_input_lbc_sv = 21600
+/
+
+!&NAMDATETIME
+!l_datetime = .true.
+!startyear  = 2016
+!startmonth = 8
+!startday   = 15
+!timezone   = 2
+!/
+
+&NAMEMISSION
+l_emission = .false.
+kemis = 9
+!svskip = 2
+emisnames(1) = 'co2   '
+/
+
+&SOLVER
+!solver_id = 6
+!precond_id = 0
+!n_pre = 1
+!n_post = 1
+!tolerance = 1e-5
+!maxiter   = 40
+!maxiter_precond = 1
+solver_id = 100        ! FFTW
+/
+
+&OPENBC
+lopenbc = .true.
+linithetero = .true.
+lper = f,f
+dxint = 2500
+dyint = 2500
+dxturb = 480000
+dyturb = 320000
+lbuoytop = .true.
+taum  = 0.
+tauh = 20.
+pbc   = 3
+lsynturb = .true.
+iturb    = 1
+lambda = 1875.
+lambdas_x = 1875.
+lambdas_y = 1875.
+lambdas_z = 240.
+tau = 180.
+nmodes = 20
+/

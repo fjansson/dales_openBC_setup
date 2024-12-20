@@ -155,6 +155,9 @@ def prep_harmonie(input,grid):
     exnrs = exnr[0,1]
     exnr = exnr[1:,1]
   print(f'ps = {ps_exnr}')
+  print(f'thls = {thls_exnr}')
+  input['ps'] = ps_exnr # save the ps value used for the profile
+  input['thls'] = thls_exnr # and thls
   exnr     = xr.DataArray(np.concatenate([exnrs[None],exnr]),
                           dims = ['z'],
                           coords={'z': z_int},

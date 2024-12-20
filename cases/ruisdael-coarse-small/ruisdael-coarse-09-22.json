@@ -23,9 +23,9 @@
       "dz0": 20,
       "alpha": 0.012
       },
-      "_tskin": { 
+     "_tskin": { 
       "ERA5_path": "/projects/0/nwo21036/fredrik/era5/"
-      },
+     },
       "data_path": "/projects/0/nwo21036/spatial_data/",
       "LSM":{
 	  "ERA5_path": "/projects/0/nwo21036/fredrik/era5/",

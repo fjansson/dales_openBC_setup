@@ -1,0 +1,50 @@
+{ "author": "Fredrik Jansson",
+  "coarse": {
+     "source": "HARMONIE",
+     "inpath": "/archive/work_F/weather_simulation/ruisdael_data/EUREC4A/harmonie/",
+     "outpath":"/archive/work_F/weather_simulation/ruisdael_data/eurec4a-small/",
+     "start":"2020-02-05T00:00",
+     "time0":"2020-02-05T00:00",
+     "end":  "2020-02-06T00:00",
+     "iexpnr": 1,
+     "lat_sw": 12,
+     "lon_sw": -66,
+     "e12": 0.01,
+     "nsv": 2,
+     "nprocx": 1,
+     "nprocy": 1,
+     "tchunk": 1,
+     "grid": {
+      "xsize": 40000,
+      "ysize": 40000,
+      "itot": 64,
+      "jtot": 64,
+      "kmax": 150,
+      "dz0": 20,
+      "alpha": 0.012
+      },
+     "_tskin": { 
+      "ERA5_path": "/archive/work_F/weather_simulation/ruisdael_data/EUREC4A/era5/"
+     },
+      "data_path": "/archive/work_F/weather_simulation/ruisdael_data/spatial_data/",
+      "_LSM":{
+	  "ERA5_path": "/archive/work_F/weather_simulation/ruisdael_data/ERA5/",
+	  "spatial_data_path": "/archive/work_F/weather_simulation/ruisdael_data/spatial_data/",
+	  "lsm_kind" : "TNO"
+      },
+     "Nc_0": {
+      "Nc_cst": 70e6,
+      "z_cst": 4e3,
+      "z_e":  2e3
+     },
+     "synturb": {
+      "dx": 40000,
+      "dy": 40000
+      },
+     "_filter": {
+      "_time_start": "2021-09-24T00:00", 
+      "_time_end": "2021-09-24T02:00",
+      "_sigma": 20e3
+     }
+   }
+}

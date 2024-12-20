@@ -2,7 +2,7 @@
 &RUN
 iexpnr     = 001
 lwarmstart = .false.
-startfile  = 'initdlatestmx000y000.001'
+startfile  = 'initd_latest_x000y000.001'
 runtime = 86400
 trestart   = 14400 !86400
 ladaptive  = .true.
@@ -34,7 +34,8 @@ xyear = 2021
 
 &PHYSICS
 z0         = 1e-3
-ps         = 102000.00
+!ps         = 102000.00
+ps          = 100974.68032932281
 thls       = 287
 lmoist     = .true.
 lcoriol    = .true.
@@ -42,6 +43,7 @@ igrw_damp  = 0       ! 3 = nudge (damping) to mean profile
 iradiation = 4       ! 4 = RRTMG
 timerad    = 60
 lfast_thermo = .true.
+lconstexner = .true.
 /
 
 &NAMSURFACE
@@ -62,6 +64,7 @@ lfreedrainage = .true.
 dz_soil = 1.89 0.72 0.21 0.07
 iinterp_t = 3
 iinterp_theta = 4
+nlu        = 10
 /
 
 &DYNAMICS
@@ -74,7 +77,7 @@ iadv_mom   = 5
 iadv_tke   = 5
 iadv_thl   = 5
 iadv_qt    = 5
-iadv_sv    = 7, 7, 7
+iadv_sv    = 7
 /
 
 &NAMMICROPHYSICS
@@ -135,7 +138,7 @@ lcross      = .true.
 !lyz         = .false.
 !lspan       = .false.
 dtav        = 60
-crossheight = 1 5 21
+crossheight = 1 5 21 150
 !crossplane  = 20 60         ! j index of plane  e-w plane
 !crossortho  = 20 60         ! i index of plane  n-s plane 
 crossplane = 160 352  ! xz crossection, north and south border
@@ -183,6 +186,17 @@ dtav = 60
 ltend = .false.
 /
 
+&NAMRADFIELD
+lradfield = .true.
+dtav = 300
+/
+
+&NAMTRACERS
+ltracers    = .true.
+! tracernames = 'dinges', 'nox', 'co2', 'nh3', 'qr'
+tracernames = 'nr', 'qr'
+/
+
 &NAMNUDGE
 lnudge = .false.
 tnudgefac = 10800
@@ -225,7 +239,7 @@ dt_input_lbc_sv = 21600
 &NAMEMISSION
 l_emission = .false.
 kemis = 9
-svskip = 2
+!svskip = 2
 emisnames(1) = 'co2   '
 /
 
@@ -248,7 +262,7 @@ dxint = 2500
 dyint = 2500
 dxturb = 480000
 dyturb = 320000
-lbuoytop = .false.
+lbuoytop = .true. ! Frans says true
 taum  = 0.
 tauh = 20.
 pbc   = 3

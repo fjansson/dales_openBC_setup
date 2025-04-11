@@ -6,3 +6,11 @@ Contains scripts to create input.
 
 ## simulations
 Contains the different simulation setups.
+
+# Installation
+
+```
+python -m venv openbc_env
+. openbc_env/bin/activate
+pip install cdsapi numpy xarray netcdf4 matplotlib numba "dask[complete]" progress  pyproj scipy f90nml
+```

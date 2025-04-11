@@ -6,6 +6,7 @@ import xarray as xr
 from pyproj import Transformer
 import dask
 from numba import jit
+import math
 # Constants
 # Simulation constants (modglobal)
 p0   = 1e5          # Reference pressure
@@ -289,7 +290,7 @@ def differentiate(data,coord,order,acc=6):
       ip2= ip-int((ncoef-1)/2)+j
       dx = x[ip2]-x[ip]
       for i in range(ncoef):
-        A[i,j] = 1/np.math.factorial(i)*dx**i
+        A[i,j] = 1/math.factorial(i)*dx**i
     coef = np.linalg.solve(A,b)
     out[{coord: ip}] = 0.
     for i in range(ncoef):

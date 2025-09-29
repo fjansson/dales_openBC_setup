@@ -75,7 +75,7 @@ if 'coarse' in input:
   #%% Apply spatial horizontal Gaussian filter to data
   if('filter' in input_coarse and input_coarse['source'].lower() != 'none'):
     data = gaussian_filter(data,input_coarse)
-  data.to_netcdf(f'{input_coarse['outpath']}/input_data.nc') # experiment: save the processed data
+  data.to_netcdf(f"{input_coarse['outpath']}/input_data.nc") # experiment: save the processed data
 
   if 'LSM' in input_coarse:
     x_sw, y_sw = proj4_hm(input_coarse['lon_sw'], input_coarse['lat_sw'], inverse=False)

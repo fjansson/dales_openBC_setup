@@ -1,8 +1,8 @@
 { "author": "Frans Liqui Lung",
   "coarse": {
      "source": "HARMONIE",
-     "inpath":"/perm/nmfl/eureca-setup/harmonie/",
-     "outpath":"/hpcperm/nmfl/eureca/simulations/2304x1920_nested/coarse/input/001/",
+     "inpath":"/ec/res4/scratch/nkjf/eurec4a-mip/nkl/harmonie/BES/Pier_Barbados/BES_1hr_HCLIM43_fERA5/2020/02/01/00/",
+     "outpath":"/ec/res4/scratch/nkjf/eurec4a-mip/simulations/2304x1920_nested/coarse/input/001/",
      "start":"2020-02-05T00:00",
      "end":  "2020-02-05T08:00",
      "time0": "2020-02-05T00:00",
@@ -24,7 +24,7 @@
       "alpha": 0.012
       },
      "tskin": { 
-      "ERA5_path": "/ec/res4/hpcperm/nmfl/eureca/era5/"
+      "ERA5_path": "/ec/res4/scratch/nkjf/eurec4a-mip/era5/"
       },
      "synturb": {
       "dx": 1440000,

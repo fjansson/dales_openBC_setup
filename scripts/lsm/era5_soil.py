@@ -9,27 +9,29 @@ def download_era5_soil(date, path):
     """
     out_file = '{0}/{1:04d}{2:02d}{3:02d}_{4:02d}_soil.nc'.format(
             path, date.year, date.month, date.day, date.hour)
-
+    print('Looking for', out_file)
     if os.path.exists(out_file):
         print('Found {} local!'.format(out_file))
     else:
         cds_dict = {
                 'product_type': 'reanalysis',
-                'format': 'netcdf',
+                'data_format': 'netcdf',
                 'variable': [
                     'sea_surface_temperature', 'soil_temperature_level_1',
                     'soil_temperature_level_2', 'soil_temperature_level_3',
                     'soil_temperature_level_4', 'soil_type', 'skin_temperature',
                     'volumetric_soil_water_layer_1', 'volumetric_soil_water_layer_2',
                     'volumetric_soil_water_layer_3', 'volumetric_soil_water_layer_4',
-                    'land_sea_mask'
+                    'land_sea_mask',
+                    "surface_pressure",  # FJ added as experiment, not needed by workflow
                 ],
                 'year': '{0:04d}'.format(date.year),
                 'month': '{0:02d}'.format(date.month),
                 'day': '{0:02d}'.format(date.day),
                 'time': '{0:02d}:{1:02d}'.format(date.hour, date.minute),
-                # 'area': [53.47, 2.92, 50.47, 6.92],
-                'area': [60, 0, 45, 15], 
+                # 'area': [53.47, 2.92, 50.47, 6.92],   small Ruisdael
+                # 'area': [60, 0, 45, 15],  # N W S E   Netherlands / Ruisdael
+                 'area': [25, -65, 5, -55],  # N W S E   EUREC4A-MIP
             }
 
         c = cdsapi.Client()
@@ -108,9 +110,9 @@ def calc_root_fraction(a_r, b_r, zh):
 if __name__ == '__main__':
     from datetime import datetime, timedelta
 
-    date = datetime(2018,6,1,0)
-    path='/archive/work_F/weather_simulation/ruisdael_data/ERA5/'
-    for i in range (31):
+    date = datetime(2020,2,1,0)
+    path='./ERA5/'
+    for i in range (14):
         print(date)
         download_era5_soil(date, path)
         date += timedelta(days=1)

@@ -6,6 +6,7 @@ import xarray as xr
 from pyproj import Transformer
 import dask
 from numba import jit
+import math
 # Constants
 # Simulation constants (modglobal)
 p0   = 1e5          # Reference pressure
@@ -21,6 +22,7 @@ def prep_harmonie(input,grid):
   data = []
   # Open data and crop data
   for var in variables:
+    print(f"trying to open {input['inpath']}{var}_*.nc")
     with xr.open_mfdataset(f"{input['inpath']}{var}_*.nc",chunks={"time": input['tchunk']}) as ds:
       # Get time epochs
       if(var==variables[0]):
@@ -121,6 +123,7 @@ def prep_harmonie(input,grid):
     its = 0
     var_intz = []
     # Loop over time chunks (allows for parallel calculation in time index)
+    data=data.unify_chunks()
     for tchunk in data.chunks['time']:
       ite = its+tchunk
       data_slice = dask.delayed(load_data)(data[var],{'time': np.arange(its,ite)},drop=False)
@@ -174,7 +177,7 @@ def prep_harmonie(input,grid):
     zi_min= 200
     zi_max= 4000
     thlmean = thl.sel(x=slice(0,grid.xsize),y=slice(0,grid.ysize)).mean(dim=['x','y'])
-    cbmean= xr.where(cb>0.,cb,np.NaN).sel(x=slice(0,grid.xsize),y=slice(0,grid.ysize)).mean(dim=['x','y'])
+    cbmean= xr.where(cb>0.,cb,np.nan).sel(x=slice(0,grid.xsize),y=slice(0,grid.ysize)).mean(dim=['x','y'])
     its = 0 
     d2thl = []
     d1thl = []
@@ -196,7 +199,7 @@ def prep_harmonie(input,grid):
   data = data.rename({'ua': 'u', 'va': 'v', 'wa': 'w'})\
     .drop(['ta','p','clw','hus','height'])\
     .assign({'transform' : xr.DataArray([],name='Lambert_Conformal',attrs=transform.parameters)})
-  #data.to_netcdf(f"{input['outpath']}harmonie.nc", mode='w', format="NETCDF4")
+  data.to_netcdf(f"{input['outpath']}harmonie.nc", mode='w', format="NETCDF4")
   return data,transform
 
 class Transform:
@@ -286,7 +289,7 @@ def differentiate(data,coord,order,acc=6):
       ip2= ip-int((ncoef-1)/2)+j
       dx = x[ip2]-x[ip]
       for i in range(ncoef):
-        A[i,j] = 1/np.math.factorial(i)*dx**i
+        A[i,j] = 1/math.factorial(i)*dx**i
     coef = np.linalg.solve(A,b)
     out[{coord: ip}] = 0.
     for i in range(ncoef):

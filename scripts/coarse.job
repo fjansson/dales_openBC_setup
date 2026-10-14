@@ -1,0 +1,12 @@
+#!/bin/bash
+#SBATCH --job-name=create_input
+#SBATCH --output=create_input.out
+#SBATCH --error=create_input.error
+#SBATCH --time=24:00:00
+#SBATCH --qos=nf
+#SBATCH --account=spnlsieb
+#SBATCH --mem=128G
+
+module load python3/3.13.13-01
+. /ec/res4/scratch/nkjf/eurec4a-mip/eurec4a_env/bin/activate
+python3 create_input.py input_coarse.json

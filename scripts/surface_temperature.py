@@ -6,8 +6,20 @@ from scipy.interpolate import LinearNDInterpolator
 import pandas as pd
 import dask
 def surface_temperature(input,grid,data,transform):
-  with xr.open_mfdataset(f"{input['tskin']['ERA5_path']}*.nc",chunks={"time": input['tchunk']}) as ds:
-    tskin = ds.T_SKIN.sel(time=slice(input['start'],input['end']))/data.exnr.sel(z=0).values
+  print(f"Trying to open {input['tskin']['ERA5_path']}*.nc")
+  with xr.open_mfdataset(f"{input['tskin']['ERA5_path']}*.nc",chunks={"valid_time": input['tchunk']}) as ds:
+    # tskin = ds.T_SKIN.sel(time=slice(input['start'],input['end']))/data.exnr.sel(z=0).values
+    print(ds)
+    ds = ds.rename({'latitude'  : 'lat',    #rename - new copernicus format messed with the naming
+                    'longitude' : 'lon',
+                    'valid_time': 'time',})
+    print()
+    print(ds)
+
+    tskin = ds.skt.sel(time=slice(input['start'],input['end']))/data.exnr.sel(z=0).values  # skin temperature name has changed to skt
+    print()
+    print(tskin)
+
   # Transform from lat lon to rectilinear grid
   lat_era = tskin.lat.values
   lon_era = tskin.lon.values

@@ -6,6 +6,7 @@ import xarray as xr
 from pyproj import Transformer
 import dask
 from numba import jit
+import math
 # Constants
 # Simulation constants (modglobal)
 p0   = 1e5          # Reference pressure
@@ -171,7 +172,7 @@ def prep_harmonie(input,grid):
     zi_min= 200
     zi_max= 4000
     thlmean = thl.sel(x=slice(0,grid.xsize),y=slice(0,grid.ysize)).mean(dim=['x','y'])
-    #cbmean= xr.where(cb>0.,cb,np.NaN).sel(x=slice(0,grid.xsize),y=slice(0,grid.ysize)).mean(dim=['x','y'])
+    #cbmean= xr.where(cb>0.,cb,np.nan).sel(x=slice(0,grid.xsize),y=slice(0,grid.ysize)).mean(dim=['x','y'])
     cbmean = 1000
     print('Hack: cb set to 1000')
     its = 0 
@@ -284,7 +285,7 @@ def differentiate(data,coord,order,acc=6):
       ip2= ip-int((ncoef-1)/2)+j
       dx = x[ip2]-x[ip]
       for i in range(ncoef):
-        A[i,j] = 1/np.math.factorial(i)*dx**i
+        A[i,j] = 1/math.factorial(i)*dx**i
     coef = np.linalg.solve(A,b)
     out[{coord: ip}] = 0.
     for i in range(ncoef):

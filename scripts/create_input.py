@@ -27,8 +27,8 @@ if 'coarse' in input:
   elif(input_coarse['source'].lower() == 'harmonie_wins50'):
     data,transform = prep_harmonie_WINS50.prep_harmonie(input_coarse,grid)
   else:
-    print('unvalid source type')
-    exit()
+    print('invalid source type')
+    sys.exit()
   #%% Apply spatial horizontal Gaussian filter to data
   if('filter' in input_coarse):
     data = gaussian_filter(data,input_coarse)
@@ -46,7 +46,11 @@ if 'coarse' in input:
   #   print('Finished creating LSM input')
 
   #%% Advective time interpolation of input data (optional, to be implemented)
-  
+
+  #%% Create heterogeneous and time dependend skin temperature > tskin.inp.xxx.nc (if ltskin==true)
+  if('tskin' in input_coarse):
+    tskin = surface_temperature(input_coarse,grid,data,transform)
+    print('finished surface temperature')
   #%% Create initial fields > initfields.inp.xxx.nc
   if(input_coarse['start']==input_coarse['time0']): # Not required for warmstarts
     initfields = initial_fields(input_coarse,grid,data,transform)
@@ -61,10 +65,6 @@ if 'coarse' in input:
   if('synturb' in input_coarse): 
     synturb = synthetic_turbulence(input_coarse,grid,data,transform)
     print('finished synthetic turbulence')
-  #%% Create heterogeneous and time dependend skin temperature > tskin.inp.xxx.nc (if ltskin==true)
-  if('tskin' in input_coarse): 
-    tskin = surface_temperature(input_coarse,grid,data,transform)
-    print('finished surface temperature')
 
 #%% Write data to input files
 if('fine' in input):
